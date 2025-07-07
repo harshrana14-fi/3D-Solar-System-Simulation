@@ -2,16 +2,23 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Solar System Simulation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>3D Solar System Simulation</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div id="canvas-container"></div>
 
+    <!-- Mobile menu button -->
+    <button id="mobile-menu-btn" class="mobile-menu-btn">☰</button>
+
+    <!-- Controls Panel -->
     <div id="controls-panel" class="ui-panel">
-      <div class="panel-header">Solar System Controls</div>
+      <div class="panel-header">
+        <span>Solar System Controls</span>
+        <button id="close-controls" class="close-btn">×</button>
+      </div>
 
       <div class="main-controls">
         <button id="pause-btn" class="control-button">Pause</button>
@@ -25,37 +32,49 @@
       </div>
     </div>
 
+    <!-- Planet Info Panel -->
     <div id="planet-info" class="ui-panel">
       <div class="panel-header">
-        <h5>Hover over a planet for details</h5>
+        <h5>Hover/Tap planet for details</h5>
+        <button id="close-info" class="close-btn">×</button>
       </div>
 
-      <div class="info-row">
-        <span class="info-label">Distance from Sun:</span>
-        <span class="info-value" id="distance">-</span>
-      </div>
+      <div class="info-content">
+        <div class="info-row">
+          <span class="info-label">Distance from Sun:</span>
+          <span class="info-value" id="distance">-</span>
+        </div>
 
-      <div class="info-row">
-        <span class="info-label">Orbital Period:</span>
-        <span class="info-value" id="period">-</span>
-      </div>
+        <div class="info-row">
+          <span class="info-label">Orbital Period:</span>
+          <span class="info-value" id="period">-</span>
+        </div>
 
-      <div class="info-row">
-        <span class="info-label">Diameter:</span>
-        <span class="info-value" id="diameter">-</span>
+        <div class="info-row">
+          <span class="info-label">Diameter:</span>
+          <span class="info-value" id="diameter">-</span>
+        </div>
       </div>
     </div>
 
+    <!-- Mobile Instructions -->
     <div class="instructions">
       <h6>Controls:</h6>
-      <ul>
+      <ul class="desktop-controls">
         <li>Drag to rotate view</li>
         <li>Mouse wheel to zoom</li>
         <li>Space to pause/resume</li>
         <li>R to reset</li>
         <li>L to toggle labels</li>
       </ul>
+      <ul class="mobile-controls">
+        <li>Touch drag to rotate</li>
+        <li>Pinch to zoom</li>
+        <li>Tap planets for info</li>
+        <li>Use menu for controls</li>
+      </ul>
     </div>
+
     <script src="script.js"></script>
   </body>
 </html>
