@@ -10,12 +10,10 @@ class SolarSystem {
     this.showLabels = false;
     this.labels = [];
 
-    // Mouse interaction
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
     this.hoveredPlanet = null;
 
-    // Planet data
     this.planetData = [
       {
         name: "Mercury",
@@ -120,8 +118,7 @@ class SolarSystem {
     this.scene.background = new THREE.Color(0x000011);
   }
 
-
- createCamera() {
+  createCamera() {
     this.camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
@@ -139,16 +136,15 @@ class SolarSystem {
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document
       .getElementById("canvas-container")
-      .appendChild(this.renderer.domElement);}
+      .appendChild(this.renderer.domElement);
+  }
 
-    createLights() {
-    // Sun light
+  createLights() {
     const sunLight = new THREE.PointLight(0xffffff, 2, 200);
     sunLight.position.set(0, 0, 0);
     sunLight.castShadow = true;
     this.scene.add(sunLight);
 
-    // Ambient light
     const ambientLight = new THREE.AmbientLight(0x404040, 0.3);
     this.scene.add(ambientLight);
   }
@@ -175,14 +171,12 @@ class SolarSystem {
       "position",
       new THREE.Float32BufferAttribute(starVertices, 3)
     );
-
     const stars = new THREE.Points(starGeometry, starMaterial);
     this.scene.add(stars);
   }
 
   createSun() {
     const textureLoader = new THREE.TextureLoader();
-
     const sunGeometry = new THREE.SphereGeometry(4, 64, 64);
     const sunMaterial = new THREE.MeshBasicMaterial({
       map: textureLoader.load("textures/sun.jpg"),
@@ -191,41 +185,30 @@ class SolarSystem {
     });
     this.sun = new THREE.Mesh(sunGeometry, sunMaterial);
     this.sun.userData = { type: "sun" };
-    this.sun.castShadow = false;
     this.scene.add(this.sun);
   }
 
   createPlanets() {
     const textureLoader = new THREE.TextureLoader();
-
     this.planetData.forEach((data, index) => {
       const geometry = new THREE.SphereGeometry(data.size, 64, 64);
       const texture = textureLoader.load(
         `textures/${data.name.toLowerCase()}.jpg`
       );
-
       const material = new THREE.MeshPhongMaterial({
         map: texture,
         shininess: 20,
       });
-
       const planet = new THREE.Mesh(geometry, material);
       planet.castShadow = true;
       planet.receiveShadow = true;
       planet.position.x = data.distance;
-      planet.userData = {
-        type: "planet",
-        index: index,
-        name: data.name,
-        data: data,
-      };
+      planet.userData = { type: "planet", index, name: data.name, data };
 
-      // Orbit group
       const orbitGroup = new THREE.Group();
       orbitGroup.add(planet);
       this.scene.add(orbitGroup);
 
-      // Orbit ring
       const orbitGeometry = new THREE.RingGeometry(
         data.distance - 0.05,
         data.distance + 0.05,
@@ -241,7 +224,6 @@ class SolarSystem {
       orbitLine.rotation.x = Math.PI / 2;
       this.scene.add(orbitLine);
 
-      // Add optional atmosphere
       if (["Earth", "Jupiter", "Saturn"].includes(data.name)) {
         const atmosphereGeo = new THREE.SphereGeometry(
           data.size * 1.05,
@@ -258,7 +240,6 @@ class SolarSystem {
         planet.add(atmosphere);
       }
 
-      // Add Saturn's ring
       if (data.name === "Saturn") {
         const ringGeo = new THREE.RingGeometry(
           data.size * 1.2,
@@ -278,9 +259,9 @@ class SolarSystem {
 
       this.planets.push({
         mesh: planet,
-        orbitGroup: orbitGroup,
-        orbitLine: orbitLine,
-        data: data,
+        orbitGroup,
+        orbitLine,
+        data,
         angle: Math.random() * Math.PI * 2,
         currentSpeed: data.speed,
         trail: null,
@@ -288,8 +269,9 @@ class SolarSystem {
       });
     });
   }
-createLabels() {
-    this.planets.forEach((planet, index) => {
+
+  createLabels() {
+    this.planets.forEach((planet) => {
       const canvas = document.createElement("canvas");
       const context = canvas.getContext("2d");
       canvas.width = 200;
@@ -307,7 +289,7 @@ createLabels() {
         canvas.height / 2 + 6
       );
 
-       const texture = new THREE.CanvasTexture(canvas);
+      const texture = new THREE.CanvasTexture(canvas);
       const material = new THREE.SpriteMaterial({
         map: texture,
         transparent: true,
@@ -323,7 +305,7 @@ createLabels() {
     });
   }
 
-   removeLabels() {
+  removeLabels() {
     this.planets.forEach((planet) => {
       if (planet.label) {
         this.scene.remove(planet.label);
@@ -334,7 +316,6 @@ createLabels() {
 
   createControls() {
     const controlsContainer = document.getElementById("planet-controls");
-
     this.planets.forEach((planet, index) => {
       const controlGroup = document.createElement("div");
       controlGroup.className = "control-group";
@@ -353,7 +334,7 @@ createLabels() {
       slider.value = planet.data.speed;
       slider.id = `speed-${index}`;
 
-    const speedValue = document.createElement("span");
+      const speedValue = document.createElement("span");
       speedValue.className = "speed-value";
       speedValue.textContent = `${planet.data.speed.toFixed(1)}x`;
 
@@ -371,9 +352,48 @@ createLabels() {
     });
   }
 
+  setupEventListeners() {
+    // Touch Zoom Support
+    let lastTouchDist = null;
 
- setupEventListeners() {
-    // Pause/Resume button
+    this.renderer.domElement.addEventListener("touchstart", (e) => {
+      if (e.touches.length === 2) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        lastTouchDist = Math.sqrt(dx * dx + dy * dy);
+      }
+    });
+
+    this.renderer.domElement.addEventListener("touchmove", (e) => {
+      if (e.touches.length === 2 && lastTouchDist !== null) {
+        e.preventDefault();
+
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const newDist = Math.sqrt(dx * dx + dy * dy);
+
+        const delta = newDist - lastTouchDist;
+        const zoomFactor = 1 - delta * 0.002;
+
+        this.camera.position.multiplyScalar(zoomFactor);
+
+        const distance = this.camera.position.length();
+        if (distance < 20) {
+          this.camera.position.normalize().multiplyScalar(20);
+        } else if (distance > 200) {
+          this.camera.position.normalize().multiplyScalar(200);
+        }
+
+        lastTouchDist = newDist;
+      }
+    });
+
+    this.renderer.domElement.addEventListener("touchend", (e) => {
+      if (e.touches.length < 2) {
+        lastTouchDist = null;
+      }
+    });
+
     document.getElementById("pause-btn").addEventListener("click", () => {
       this.isPaused = !this.isPaused;
       const btn = document.getElementById("pause-btn");
@@ -381,13 +401,11 @@ createLabels() {
       btn.classList.toggle("active", this.isPaused);
     });
 
-    // Reset button
     document.getElementById("reset-btn").addEventListener("click", () => {
       this.resetPlanets();
     });
 
-    // Labels button
-     document.getElementById("labels-btn").addEventListener("click", () => {
+    document.getElementById("labels-btn").addEventListener("click", () => {
       this.showLabels = !this.showLabels;
       const btn = document.getElementById("labels-btn");
       btn.textContent = this.showLabels ? "Hide Labels" : "Show Labels";
@@ -400,7 +418,6 @@ createLabels() {
       }
     });
 
-    // Mouse controls
     let mouseDown = false;
     let mouseX = 0;
     let mouseY = 0;
@@ -417,7 +434,6 @@ createLabels() {
     });
 
     this.renderer.domElement.addEventListener("mousemove", (e) => {
-      // Update mouse position for hover effects
       this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
       this.handleMouseHover();
@@ -434,7 +450,7 @@ createLabels() {
       mouseY = e.clientY;
     });
 
-   this.renderer.domElement.addEventListener("mouseup", () => {
+    this.renderer.domElement.addEventListener("mouseup", () => {
       mouseDown = false;
       document.body.classList.remove("grabbing");
     });
@@ -445,47 +461,38 @@ createLabels() {
       this.clearPlanetInfo();
     });
 
-    // Zoom with mouse wheel
     this.renderer.domElement.addEventListener("wheel", (e) => {
       e.preventDefault();
       const zoomSpeed = 0.1;
       const zoomDirection = e.deltaY > 0 ? 1 : -1;
       this.camera.position.multiplyScalar(1 + zoomDirection * zoomSpeed);
 
-      // Zoom limits
       const distance = this.camera.position.length();
-      if (distance < 20) {
-        this.camera.position.normalize().multiplyScalar(20);
-      } else if (distance > 200) {
+      if (distance < 20) this.camera.position.normalize().multiplyScalar(20);
+      else if (distance > 200)
         this.camera.position.normalize().multiplyScalar(200);
-      }
     });
 
-    // Apply smooth camera rotation
     const applyCameraRotation = () => {
       currentRotationX += (targetRotationX - currentRotationX) * 0.1;
       currentRotationY += (targetRotationY - currentRotationY) * 0.1;
-
       const radius = this.camera.position.length();
       this.camera.position.x =
         radius * Math.sin(currentRotationY) * Math.cos(currentRotationX);
       this.camera.position.y = radius * Math.sin(currentRotationX);
       this.camera.position.z =
         radius * Math.cos(currentRotationY) * Math.cos(currentRotationX);
-
       this.camera.lookAt(0, 0, 0);
       requestAnimationFrame(applyCameraRotation);
     };
     applyCameraRotation();
 
-    // Window resize
     window.addEventListener("resize", () => {
       this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-  // Keyboard controls
     document.addEventListener("keydown", (e) => {
       switch (e.key) {
         case " ":
@@ -503,7 +510,6 @@ createLabels() {
       }
     });
   }
-
 
   handleMouseHover() {
     this.raycaster.setFromCamera(this.mouse, this.camera);
@@ -534,6 +540,8 @@ createLabels() {
   }
 
   showPlanetInfo(data) {
+    const infoPanel = document.getElementById("planet-info");
+    infoPanel.classList.add("active");
     document.getElementById("distance").textContent = data.realDistance;
     document.getElementById("period").textContent = data.period;
     document.getElementById("diameter").textContent = data.diameter;
@@ -541,6 +549,8 @@ createLabels() {
   }
 
   showSunInfo() {
+    const infoPanel = document.getElementById("planet-info");
+    infoPanel.classList.add("active");
     document.getElementById("distance").textContent = "-";
     document.getElementById("period").textContent = "-";
     document.getElementById("diameter").textContent = "1,392,700 km";
@@ -555,11 +565,10 @@ createLabels() {
       "Hover over a planet for details";
   }
 
- resetPlanets() {
+  resetPlanets() {
     this.planets.forEach((planet, index) => {
       planet.angle = Math.random() * Math.PI * 2;
       planet.currentSpeed = planet.data.speed;
-
       const slider = document.getElementById(`speed-${index}`);
       const speedValue = slider.nextElementSibling;
       slider.value = planet.data.speed;
@@ -569,27 +578,14 @@ createLabels() {
 
   animate() {
     requestAnimationFrame(() => this.animate());
-
     if (!this.isPaused) {
       const deltaTime = this.clock.getDelta();
-
-      // Rotate sun
       this.sun.rotation.y += deltaTime * 0.5;
-
-      // Animate planets
       this.planets.forEach((planet) => {
         planet.angle += deltaTime * planet.currentSpeed * 0.5;
-
-        const x = Math.cos(planet.angle) * planet.data.distance;
-        const z = Math.sin(planet.angle) * planet.data.distance;
-
-        planet.mesh.position.x = x;
-        planet.mesh.position.z = z;
-
-        // Planet self-rotation
+        planet.mesh.position.x = Math.cos(planet.angle) * planet.data.distance;
+        planet.mesh.position.z = Math.sin(planet.angle) * planet.data.distance;
         planet.mesh.rotation.y += deltaTime * 2;
-
-        // Update labels position
         if (planet.label) {
           planet.label.position.copy(planet.mesh.position);
           planet.label.position.y += planet.data.size + 2;
@@ -597,12 +593,29 @@ createLabels() {
         }
       });
     }
-
     this.renderer.render(this.scene, this.camera);
   }
 }
 
-// Initialize the solar system when page loads
+// ✅ Initialize solar system + mobile menu toggle
 window.addEventListener("load", () => {
-  new SolarSystem();
+  const solarSystem = new SolarSystem();
+
+  const menuBtn = document.getElementById("mobile-menu-btn");
+  const controlsPanel = document.getElementById("controls-panel");
+  const planetInfo = document.getElementById("planet-info");
+  const closeControls = document.getElementById("close-controls");
+  const closeInfo = document.getElementById("close-info");
+
+  menuBtn.addEventListener("click", () => {
+    controlsPanel.classList.toggle("active");
+  });
+
+  closeControls.addEventListener("click", () => {
+    controlsPanel.classList.remove("active");
+  });
+
+  closeInfo.addEventListener("click", () => {
+    planetInfo.classList.remove("active");
+  });
 });
