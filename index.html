@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Solar System Simulation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="canvas-container"></div>
+
+    <div id="controls-panel" class="ui-panel">
+      <div class="panel-header">Solar System Controls</div>
+
+      <div class="main-controls">
+        <button id="pause-btn" class="control-button">Pause</button>
+        <button id="reset-btn" class="control-button">Reset</button>
+        <button id="labels-btn" class="control-button">Show Labels</button>
+      </div>
+
+      <div class="speed-controls">
+        <div class="speed-controls-header">Planet Speeds</div>
+        <div id="planet-controls"></div>
+      </div>
+    </div>
+
+    <div id="planet-info" class="ui-panel">
+      <div class="panel-header">
+        <h5>Hover over a planet for details</h5>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label">Distance from Sun:</span>
+        <span class="info-value" id="distance">-</span>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label">Orbital Period:</span>
+        <span class="info-value" id="period">-</span>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label">Diameter:</span>
+        <span class="info-value" id="diameter">-</span>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <h6>Controls:</h6>
+      <ul>
+        <li>Drag to rotate view</li>
+        <li>Mouse wheel to zoom</li>
+        <li>Space to pause/resume</li>
+        <li>R to reset</li>
+        <li>L to toggle labels</li>
+      </ul>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
