@@ -433,6 +433,36 @@ class SolarSystem {
       document.body.classList.add("grabbing");
     });
 
+        // Touch drag to rotate camera
+    this.renderer.domElement.addEventListener("touchstart", (e) => {
+      if (e.touches.length === 1) {
+        mouseDown = true;
+        mouseX = e.touches[0].clientX;
+        mouseY = e.touches[0].clientY;
+        document.body.classList.add("grabbing");
+      }
+    });
+
+    this.renderer.domElement.addEventListener("touchmove", (e) => {
+      if (mouseDown && e.touches.length === 1) {
+        e.preventDefault();
+        const deltaX = e.touches[0].clientX - mouseX;
+        const deltaY = e.touches[0].clientY - mouseY;
+
+        targetRotationY += deltaX * 0.01;
+        targetRotationX += deltaY * 0.01;
+
+        mouseX = e.touches[0].clientX;
+        mouseY = e.touches[0].clientY;
+      }
+    });
+
+    this.renderer.domElement.addEventListener("touchend", () => {
+      mouseDown = false;
+      document.body.classList.remove("grabbing");
+    });
+
+
     this.renderer.domElement.addEventListener("mousemove", (e) => {
       this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
